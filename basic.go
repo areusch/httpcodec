@@ -3,6 +3,7 @@ package httpcodec;
 import(
 	"encoding/json"
 	"encoding/xml"
+	"io"
 	"net/http"
 	"net/rpc"
 	"net/url"
