@@ -3,23 +3,30 @@ package httpcodec;
 import(
 	"encoding/json"
 	"encoding/xml"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/rpc"
 	"net/url"
 )
 
-func NewEndpointRequestEncoder(method string, endpoint *url.URL) HeaderEncoder {
-	return func(req *rpc.Request, v interface{}, httpReq *http.Request) error {
-		httpReq.Method = method
-		httpReq.URL = endpoint
-		httpReq.Proto = "HTTP/1.1"
-		httpReq.ProtoMajor = 1
-		httpReq.ProtoMinor = 1
-		httpReq.Header = make(http.Header)
-		httpReq.Host = endpoint.Host
-		return nil
+func NewEndpointRequestEncoder(method string, rawurl string) HeaderEncoder {
+	if endpoint, err := url.Parse(rawurl); err == nil {
+		return func(req *rpc.Request, v interface{}, httpReq *http.Request) error {
+			httpReq.Method = method
+			httpReq.URL = endpoint
+			httpReq.Proto = "HTTP/1.1"
+			httpReq.ProtoMajor = 1
+			httpReq.ProtoMinor = 1
+			httpReq.Header = make(http.Header)
+			httpReq.Host = endpoint.Host
+			return nil
+		}
+	} else {
+		panic(err)
 	}
+	return nil
 }
 
 func NewURLEncoder() HeaderEncoder {
@@ -40,6 +47,14 @@ func JSONBodyEncoder(w io.Writer) Encoder {
 
 func XMLBodyEncoder(w io.Writer) Encoder {
 	return xml.NewEncoder(w)
+}
+
+// Returns an error if response code != 200
+func StandardHeaderDecoder(resp *http.Response, rpcResp *rpc.Response) error {
+	if resp.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("Server returned HTTP response: %s", resp.Status))
+	}
+	return nil
 }
 
 func JSONDecoder(r io.Reader) Decoder {

@@ -17,6 +17,7 @@ type ActiveCall struct {
 type HTTPCodec struct {
 	Service string
 	Open bool
+	config Config
 	client *http.Client
 	methods map[string]*MethodCodec
 	requestQueue chan *ActiveCall
@@ -24,7 +25,11 @@ type HTTPCodec struct {
 	bodyQueue chan *ActiveCall
 }
 
-func NewHTTPCodec(Service string, client *http.Client) *HTTPCodec {
+type Config struct {
+	OAuth OAuthConfig
+}
+
+func NewHTTPCodec(Service string, client *http.Client, config Config) *HTTPCodec {
 	return &HTTPCodec{Service: Service, Open: true, client: client, methods: make(map[string]*MethodCodec)}
 }
 
@@ -38,6 +43,16 @@ func (c *HTTPCodec) Register(method string, codec *MethodCodec) {
 
 func (c HTTPCodec) IsStarted() bool {
 	return c.requestQueue != nil
+}
+
+func (c *HTTPCodec) Close() error {
+	close(c.requestQueue)
+	close(c.replyQueue)
+	close(c.bodyQueue)
+	c.bodyQueue = nil
+	c.replyQueue = nil
+	c.requestQueue = nil
+	return nil
 }
 
 func (c *HTTPCodec) Start() {
