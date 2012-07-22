@@ -5,7 +5,6 @@ import(
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/rpc"
 	"net/url"
