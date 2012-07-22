@@ -1,7 +1,6 @@
 package httpcodec;
 
 import(
-	"fmt"
 	"github.com/garyburd/go-oauth/oauth"
 	"net/http"
 	"net/rpc"
@@ -26,7 +25,6 @@ func NewOAuth1Encoder(config OAuthConfig) HeaderEncoder {
 	var client oauth.Client = oauth.Client{Credentials: config.Consumer}
 	var token oauth.Credentials = config.Token
 	return func(r *rpc.Request, v interface{}, req *http.Request) error {
-		fmt.Printf("blah\n")
 		var signUrl url.URL = *req.URL
 		var params = signUrl.Query()
 	  // OAuth library appends the full set of signed params to the signing url.
