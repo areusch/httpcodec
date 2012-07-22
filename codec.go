@@ -68,6 +68,7 @@ func (c *HTTPCodec) Start() {
 
 func (c *HTTPCodec) requestSender() {
 	for req, ok := <- c.requestQueue; ok; req = <- c.requestQueue {
+		fmt.Printf("URL: %s\n", req.request.URL.String())
 		req.reply, req.err = c.client.Do(req.request)
 		c.replyQueue <- req
 	}
@@ -107,7 +108,7 @@ func (c *HTTPCodec) ReadResponseHeader(resp *rpc.Response) (err error) {
 	if req.err != nil {
 		resp.Error = req.err.Error()
 	} else {
-		if e2 := req.codec.ReadResponseHeader(req.reply, resp); e2 != nil {
+		if e2 := req.codec.ReadStatus(req.reply, resp); e2 != nil {
 			resp.Error = e2.Error()
 		}
 	}
@@ -117,7 +118,9 @@ func (c *HTTPCodec) ReadResponseHeader(resp *rpc.Response) (err error) {
 
 func (c *HTTPCodec) ReadResponseBody(v interface{}) (err error) {
 	req := <-c.bodyQueue
-	err = req.codec.ReadReturnValue(req.reply, v)
+	if v != nil {
+		err = req.codec.ReadReturnValue(req.reply, v)
+	}
 	req.reply.Body.Close()
 	return
 }

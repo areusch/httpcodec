@@ -144,7 +144,7 @@ func main() {
 const codeTemplate string = `package {{.PackageName}};
 
 import(
-{{if .HasOAuth1Service}}  gooauth "github.com/csmcanarney/gooauth"{{end}}
+{{if .HasOAuth1Service}}  "github.com/garyburd/go-oauth/oauth"{{end}}
   "httpcodec"
   "net/http"
   "net/rpc"
@@ -162,12 +162,13 @@ type {{$serviceName}} struct {
 {{if .HasOAuth1Config}}
 var {{$defaultOAuth}} httpcodec.OAuthConfig = httpcodec.OAuthConfig{
 {{with $oauthConfig}}
-Token: gooauth.Token{
-  ConsumerKey: "{{.ConsumerKey}}",
-  ConsumerSecret: "{{.ConsumerSecret}}",
-  Key: "{{.Key}}",
+Consumer: oauth.Credentials{
+  Token: "{{.ConsumerKey}}",
+  Secret: "{{.ConsumerSecret}}",
+},
+Token: oauth.Credentials{
+  Token: "{{.Key}}",
   Secret: "{{.Secret}}",
-  SigMethod: gooauth.SM_HMAC,
 },
 {{end}}
 }
@@ -197,7 +198,7 @@ func New{{$serviceName}}WithClientConfig(client *http.Client, config httpcodec.C
 {{if .IsOAuth1}}      httpcodec.NewOAuth1Encoder(config.OAuth),{{end}}
     },
     BodyEncoder: {{.BodyEncoder}},
-    HeaderDecoder: httpcodec.StandardHeaderDecoder,
+    StatusDecoder: httpcodec.StandardStatusDecoder,
     Decoder: {{.DecoderCtor}},
   })
 

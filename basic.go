@@ -3,9 +3,9 @@ package httpcodec;
 import(
 	"encoding/json"
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/rpc"
 	"net/url"
@@ -50,10 +50,14 @@ func XMLBodyEncoder(w io.Writer) Encoder {
 }
 
 // Returns an error if response code != 200
-func StandardHeaderDecoder(resp *http.Response, rpcResp *rpc.Response) error {
+func StandardStatusDecoder(resp *http.Response, rpcResp *rpc.Response) error {
 	if resp.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("Server returned HTTP response: %s", resp.Status))
+		rpcResp.Error = fmt.Sprintf("Server returned HTTP response: %s", resp.Status)
 	}
+	if body, err := ioutil.ReadAll(resp.Body); err == nil {
+		fmt.Println(string(body))
+	}
+
 	return nil
 }
 

@@ -1,37 +1,37 @@
 package httpcodec;
 
 import(
-	gooauth "github.com/csmcanarney/gooauth"
+	"fmt"
+	"github.com/garyburd/go-oauth/oauth"
 	"net/http"
 	"net/rpc"
 	"net/url"
 )
 
 type OAuthConfig struct {
-	Token gooauth.Token
+	Consumer oauth.Credentials
+	Token oauth.Credentials
 }
 
 func SetDefaultOAuthConfig(defaults OAuthConfig, config *OAuthConfig) {
-	if config.Token.ConsumerKey == "" {
-		config.Token.ConsumerKey = defaults.Token.ConsumerKey
-		config.Token.ConsumerSecret = defaults.Token.ConsumerSecret
-		config.Token.Key = defaults.Token.Key
+	if config.Token.Token == "" {
+		config.Token.Token = defaults.Token.Token
 		config.Token.Secret = defaults.Token.Secret
-		config.Token.SigMethod = defaults.Token.SigMethod
-		// PrivateKey unused at the time of writing.
+		config.Consumer.Token = defaults.Consumer.Token
+		config.Consumer.Secret = defaults.Consumer.Secret
 	}
 }
 
-func OAuthHeaderEncoder(config OAuthConfig) HeaderEncoder {
-	var localConfig OAuthConfig = config
+func NewOAuth1Encoder(config OAuthConfig) HeaderEncoder {
+	var client oauth.Client = oauth.Client{Credentials: config.Consumer}
+	var token oauth.Credentials = config.Token
 	return func(r *rpc.Request, v interface{}, req *http.Request) error {
+		fmt.Printf("blah\n")
 		var signUrl url.URL = *req.URL
 		var params = signUrl.Query()
-	  // gooauth library appends the full set of signed params to the signing url.
+	  // OAuth library appends the full set of signed params to the signing url.
 		signUrl.RawQuery = ""
-		if err := localConfig.Token.Sign(params, req.Method, signUrl.String()); err != nil {
-			return err
-		}
+		client.SignParam(&token, req.Method, signUrl.String(), params)
 
 		req.URL.RawQuery = params.Encode()
 		return nil

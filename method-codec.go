@@ -22,7 +22,7 @@ type Encoder interface {
 type EncoderCtor func(io.Writer) Encoder
 
 type HeaderEncoder func(*rpc.Request, interface{}, *http.Request) error
-type HeaderDecoder func(*http.Response, *rpc.Response) error
+type StatusDecoder func(*http.Response, *rpc.Response) error
 
 type MethodCodec struct {
 	// Invoked first to create the http request.
@@ -31,7 +31,7 @@ type MethodCodec struct {
 	// If non-nil, invoked to encode the body of the request.
 	BodyEncoder EncoderCtor
 
-	HeaderDecoder HeaderDecoder
+	StatusDecoder StatusDecoder
 	Decoder DecoderCtor
 }
 
@@ -58,8 +58,8 @@ func (m *MethodCodec) CreateRequest(req *rpc.Request, v interface{}) (httpReq *h
 	return httpReq, nil
 }
 
-func (m *MethodCodec) ReadResponseHeader(httpReply *http.Response, resp *rpc.Response) error {
-	return m.HeaderDecoder(httpReply, resp)
+func (m *MethodCodec) ReadStatus(httpReply *http.Response, resp *rpc.Response) error {
+	return m.StatusDecoder(httpReply, resp)
 }
 
 func (m *MethodCodec) ReadReturnValue(httpReply *http.Response, resp interface{}) (err error) {
