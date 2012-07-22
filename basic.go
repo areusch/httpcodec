@@ -54,9 +54,6 @@ func StandardStatusDecoder(resp *http.Response, rpcResp *rpc.Response) error {
 	if resp.StatusCode != 200 {
 		rpcResp.Error = fmt.Sprintf("Server returned HTTP response: %s", resp.Status)
 	}
-	if body, err := ioutil.ReadAll(resp.Body); err == nil {
-		fmt.Println(string(body))
-	}
 
 	return nil
 }
