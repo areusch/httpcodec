@@ -145,7 +145,7 @@ const codeTemplate string = `package {{.PackageName}};
 
 import(
 {{if .HasOAuth1Service}}  "github.com/garyburd/go-oauth/oauth"{{end}}
-  "httpcodec"
+  "github.com/areusch/httpcodec"
   "net/http"
   "net/rpc"
 )
